@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package shipment.v1;
+
+option go_package = "tz/gen/shipment/v1;shipmentv1";
+
+import "google/protobuf/timestamp.proto";
+
+enum Status {
+  STATUS_UNSPECIFIED = 0;
+  STATUS_PENDING = 1;
+  STATUS_PICKED_UP = 2;
+  STATUS_IN_TRANSIT = 3;
+  STATUS_DELIVERED = 4;
+}
+
+message Shipment {
+  string id = 1;
+  string reference_number = 2;
+  string origin = 3;
+  string destination = 4;
+  Status current_status = 5;
+  // Stores both driver and assigned unit/vehicle details in a single field.
+  string driver_details = 6;
+  double amount = 7;
+  double driver_revenue = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message ShipmentEvent {
+  string id = 1;
+  string shipment_id = 2;
+  Status status = 3;
+  string message = 4;
+  google.protobuf.Timestamp occurred_at = 5;
+}
+
+message CreateShipmentRequest {
+  string reference_number = 1;
+  string origin = 2;
+  string destination = 3;
+  // Stores both driver and assigned unit/vehicle details in a single field.
+  string driver_details = 4;
+  double amount = 5;
+  double driver_revenue = 6;
+}
+
+message GetShipmentRequest {
+  string id = 1;
+}
+
+message AddStatusEventRequest {
+  string shipment_id = 1;
+  Status new_status = 2;
+  string message = 3;
+}
+
+message GetShipmentHistoryRequest {
+  string shipment_id = 1;
+}
+
+message GetShipmentHistoryResponse {
+  repeated ShipmentEvent events = 1;
+}
+
+service ShipmentService {
+  rpc CreateShipment(CreateShipmentRequest) returns (Shipment);
+  rpc GetShipment(GetShipmentRequest) returns (Shipment);
+  rpc AddStatusEvent(AddStatusEventRequest) returns (ShipmentEvent);
+  rpc GetShipmentHistory(GetShipmentHistoryRequest) returns (GetShipmentHistoryResponse);
+}
